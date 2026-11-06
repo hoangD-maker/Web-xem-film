@@ -855,3 +855,24 @@ def add_user():
         cursor.close()
         conn.close()
     return redirect(url_for("admin_dashboard", tab="users"))
+
+
+@app.route("/delete_user/<int:user_id>", methods=["GET"])
+def delete_user(user_id):
+    if session.get("role") != "admin":
+        return redirect(url_for("login"))
+    if user_id == session.get("user_id"):
+        flash("Không thể tự xóa tài khoản đang đăng nhập!", "error")
+        return redirect(url_for("admin_dashboard", tab="users"))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users WHERE user_id = %s", (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Đã xóa tài khoản người dùng.", "success")
+    return redirect(url_for("admin_dashboard", tab="users"))
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
