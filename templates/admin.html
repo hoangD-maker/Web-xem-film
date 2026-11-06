@@ -946,26 +946,78 @@
 </body>
 </html>
 
-<!-- Form Thêm Phim Mới trong trang quản trị -->
-<div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-lg text-white my-6">
-    <h2 class="text-2xl font-bold mb-4">Thêm Phim và Trailer Mới</h2>
-    <form action="/admin/add-movie" method="POST">
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BETA CINE+ | Trang Quản Trị - Thêm Phim</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    body { background-color: #070b14; color: #f8fafc; font-family: 'Be Vietnam Pro', sans-serif; }
+    .font-display { font-family: 'Orbitron', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- THANH HEADER ADMIN -->
+  <header class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-rose-600 flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-user-shield text-slate-950 text-lg"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-black text-lg text-white">BETA <span class="text-amber-400">ADMIN PANEL</span></h1>
+        <p class="text-xs text-slate-400">Hệ thống quản trị và vận hành rạp phim</p>
+      </div>
+    </div>
+    <a href="/home" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition">
+      <i class="fa-solid fa-house mr-1.5"></i>Về Trang Chủ
+    </a>
+  </header>
+
+  <!-- NỘI DUNG CHÍNH: KHUNG NHẬP LINK THÊM PHIM -->
+  <main class="flex-1 max-w-2xl w-full mx-auto p-6 flex items-center justify-center">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl w-full space-y-6">
+      
+      <div class="border-b border-slate-800 pb-4">
+        <h2 class="text-xl font-black text-white flex items-center gap-2">
+          <i class="fa-solid fa-circle-plus text-cyan-400"></i> Thêm Phim Mới Vào Hệ Thống
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Chỉ cần điền tên và dán đường link ảnh/trailer vào các ô bên dưới rồi nhấn Lưu.</p>
+      </div>
+
+      <!-- FORM NHẬP LIỆU -->
+      <form action="/admin/add-movie" method="POST" class="space-y-4">
         
-        <div class="mb-4">
-            <label class="block mb-2 font-semibold">Tên phim:</label>
-            <input type="text" name="title" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="VD: Avatar 2">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-300 uppercase mb-1.5">Tên Phim:</label>
+          <input type="text" name="title" required placeholder="Nhập tên phim..."
+                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500" />
         </div>
 
-        <div class="mb-4">
-            <label class="block mb-2 font-semibold">Link ảnh Poster (đuôi .jpg / .png):</label>
-            <input type="url" name="image_url" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="https://i.imgur.com/xxxx.jpg">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-300 uppercase mb-1.5">Link Ảnh Poster (đuôi .jpg / .png):</label>
+          <input type="url" name="image_url" required placeholder="https://i.imgur.com/..."
+                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500" />
         </div>
 
-        <div class="mb-4">
-            <label class="block mb-2 font-semibold">Link YouTube Trailer (dạng Embed):</label>
-            <input type="url" name="trailer_url" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="https://www.youtube.com/embed/xxxx">
+        <div>
+          <label class="block text-xs font-extrabold text-slate-300 uppercase mb-1.5">Link YouTube Trailer (dạng Embed):</label>
+          <input type="url" name="trailer_url" required placeholder="https://www.youtube.com/embed/..."
+                 class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white font-semibold focus:outline-none focus:border-blue-500" />
         </div>
 
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded font-bold text-white">Lưu Phim Lên Hệ Thống</button>
-    </form>
-</div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-sm uppercase tracking-wider shadow-lg transition">
+          <i class="fa-solid fa-cloud-arrow-up mr-2"></i>Lưu Phim Lên Web
+        </button>
+
+      </form>
+
+    </div>
+  </main>
+
+</body>
+</html>
