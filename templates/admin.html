@@ -945,3 +945,27 @@
   </script>
 </body>
 </html>
+
+<!-- Form Thêm Phim Mới trong trang quản trị -->
+<div class="max-w-xl mx-auto bg-gray-800 p-6 rounded-lg text-white my-6">
+    <h2 class="text-2xl font-bold mb-4">Thêm Phim và Trailer Mới</h2>
+    <form action="/admin/add-movie" method="POST">
+        
+        <div class="mb-4">
+            <label class="block mb-2 font-semibold">Tên phim:</label>
+            <input type="text" name="title" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="VD: Avatar 2">
+        </div>
+
+        <div class="mb-4">
+            <label class="block mb-2 font-semibold">Link ảnh Poster (đuôi .jpg / .png):</label>
+            <input type="url" name="image_url" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="https://i.imgur.com/xxxx.jpg">
+        </div>
+
+        <div class="mb-4">
+            <label class="block mb-2 font-semibold">Link YouTube Trailer (dạng Embed):</label>
+            <input type="url" name="trailer_url" required class="w-full p-2 bg-gray-700 rounded text-white" placeholder="https://www.youtube.com/embed/xxxx">
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 p-2 rounded font-bold text-white">Lưu Phim Lên Hệ Thống</button>
+    </form>
+</div>
