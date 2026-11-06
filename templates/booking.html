@@ -3,27 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BETA CINE+ | Đặt Vé & Chọn Ghế 3D - {{ current_movie.title }}</title>
+  <title>BETA CINE+ | Chọn Phim Đang Chiếu</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
   <style>
     body { background-color: #070b14; color: #f8fafc; font-family: 'Be Vietnam Pro', sans-serif; scroll-behavior: smooth; }
     .font-display { font-family: 'Orbitron', sans-serif; }
-    .screen-arc-2d {
-      height: 30px;
-      background: linear-gradient(180deg, rgba(56, 189, 248, 0.55) 0%, rgba(14, 165, 233, 0.05) 85%, transparent 100%);
-      border-top: 4px solid #38bdf8;
-      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-      box-shadow: 0 -8px 28px rgba(56, 189, 248, 0.5);
+    .hot-ribbon {
+      position: absolute;
+      top: 12px;
+      right: -32px;
+      width: 115px;
+      background: linear-gradient(90deg, #ea580c, #f97316);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: center;
+      padding: 3px 0;
+      transform: rotate(45deg);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.45);
+      letter-spacing: 0.08em;
     }
-    .seat-btn { transition: all 0.15s ease; }
-    .seat-btn:hover:not(:disabled) { transform: scale(1.15); z-index: 10; }
-    .seat-pov-focus {
-      outline: 3px solid #22d3ee !important;
-      outline-offset: 2px;
-      box-shadow: 0 0 14px #22d3ee !important;
-      z-index: 20;
+    .beta-tab-active {
+      color: #2563eb !important;
+      border-bottom: 3px solid #2563eb !important;
     }
   </style>
 </head>
@@ -32,29 +36,36 @@
   <!-- THANH TIÊU ĐỀ -->
   <header class="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
     <div class="max-w-[1380px] mx-auto px-4 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <a href="/home" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-extrabold text-cyan-300 flex items-center gap-2 transition">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Quay lại chọn phim khác</span>
-        </a>
-        <div class="hidden sm:block pl-2 border-l border-slate-800">
-          <h1 class="font-display font-black text-base tracking-wider text-white">BETA <span class="text-cyan-400">CINE+</span></h1>
-          <p class="text-[11px] text-slate-400">Đặt vé: {{ current_movie.title }}</p>
+      <a href="/home" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+          <i class="fa-solid fa-film text-white text-lg"></i>
         </div>
-      </div>
+        <div>
+          <h1 class="font-display font-black text-lg tracking-wider text-white">BETA <span class="text-cyan-400">CINE+</span></h1>
+          <p class="text-[11px] text-slate-400">Trang Chủ Chọn Phim & Tra Cứu Vé Điện Tử</p>
+        </div>
+      </a>
 
-      <div class="flex items-center gap-2.5">
-        <span class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-emerald-400">
+      <div class="flex flex-wrap items-center gap-2.5">
+        <a href="#myTicketsSection" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-bold text-cyan-300">
+          <i class="fa-solid fa-ticket mr-1.5"></i>Vé của tôi ({{ my_tickets|length }})
+        </a>
+        <span class="px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-xs font-extrabold text-emerald-300">
           <i class="fa-solid fa-user mr-1"></i>{{ session.get('full_name') }}
         </span>
-        <a href="/logout" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white font-bold text-xs transition">
+        {% if session.get('role') == 'admin' %}
+          <a href="/admin" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs">
+            <i class="fa-solid fa-user-shield mr-1"></i>Về Trang Quản Trị
+          </a>
+        {% endif %}
+        <a href="/logout" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-200 hover:text-white font-bold text-xs transition">
           <i class="fa-solid fa-right-from-bracket mr-1"></i>Đăng xuất
         </a>
       </div>
     </div>
   </header>
 
-  <main class="max-w-[1380px] w-full mx-auto px-4 pt-5 space-y-6">
+  <main class="max-w-[1380px] w-full mx-auto px-4 pt-6 space-y-8">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -67,1050 +78,232 @@
     {% endwith %}
 
     <!-- =======================================================================
-         KHUNG 1: THÔNG TIN PHIM + BƯỚC 2: CHỌN NGÀY CHIẾU & GIỜ CHIẾU
+         GIAO DIỆN CHỌN PHIM CHUẨN BETA CINEMAS (CLICK "MUA VÉ" SẼ NEXT TRANG)
          ======================================================================= -->
-    <section class="bg-slate-900/95 border border-slate-800 rounded-3xl p-5 sm:p-6 space-y-5 shadow-2xl">
+    <section class="bg-[#f8fafc] text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-6">
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center bg-slate-950 border border-slate-800 rounded-2xl p-5">
-        <div class="md:col-span-3 lg:col-span-2">
-          <img src="{{ current_movie.poster_url }}" alt="{{ current_movie.title }}"
-               class="w-full h-52 object-cover rounded-xl border border-slate-700 shadow-lg" />
-        </div>
-        <div class="md:col-span-9 lg:col-span-10 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <div class="flex flex-wrap items-center gap-2.5">
-              <span class="px-2.5 py-1 rounded-lg bg-rose-600 text-white font-black text-xs">{{ current_movie.age_rating }}</span>
-              <h2 class="text-xl sm:text-2xl font-black text-white">{{ current_movie.title }}</h2>
-              <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-xs">
-                <i class="fa-solid fa-star mr-1"></i>{{ current_movie.rating_score }}/10
-              </span>
-            </div>
-            <button type="button" onclick="openTrailerModal()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/20 border border-rose-500/40 text-rose-300 hover:bg-rose-600 hover:text-white text-xs font-extrabold transition">
-              <i class="fa-solid fa-play mr-1"></i>Xem Trailer Phim
+      <!-- 3 TAB PHÂN LOẠI -->
+      <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10 border-b border-slate-200">
+        <button type="button" onclick="filterByTab('upcoming')" id="tab-upcoming"
+                class="pb-3 text-sm sm:text-lg font-extrabold tracking-wide text-slate-700 hover:text-blue-600 transition border-b-3 border-transparent uppercase">
+          PHIM SẮP CHIẾU
+        </button>
+        <button type="button" onclick="filterByTab('showing')" id="tab-showing"
+                class="pb-3 text-sm sm:text-lg font-extrabold tracking-wide text-slate-700 hover:text-blue-600 transition border-b-3 border-transparent beta-tab-active uppercase">
+          PHIM ĐANG CHIẾU
+        </button>
+        <button type="button" onclick="filterByTab('special')" id="tab-special"
+                class="pb-3 text-sm sm:text-lg font-extrabold tracking-wide text-slate-700 hover:text-blue-600 transition border-b-3 border-transparent uppercase">
+          SUẤT CHIẾU ĐẶC BIỆT
+        </button>
+        <button type="button" onclick="filterByTab('all')" id="tab-all"
+                class="pb-3 text-sm sm:text-lg font-extrabold tracking-wide text-slate-500 hover:text-blue-600 transition border-b-3 border-transparent uppercase">
+          TẤT CẢ PHIM ({{ movies|length }})
+        </button>
+      </div>
+
+      <!-- THANH LỌC THỂ LOẠI & TÌM KIẾM TÊN PHIM -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-100 p-3.5 rounded-2xl border border-slate-200/80">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span class="text-xs font-extrabold text-slate-600 uppercase mr-1">
+            <i class="fa-solid fa-layer-group text-blue-600 mr-1"></i>Thể loại:
+          </span>
+          <button type="button" onclick="filterByGenre('all')" id="genre-btn-all"
+                  class="genre-filter-btn px-3.5 py-1.5 rounded-full text-xs font-extrabold transition bg-blue-600 text-white shadow">
+            Tất cả
+          </button>
+          {% for g in genres %}
+            <button type="button" onclick="filterByGenre('{{ g.genre_name }}')" data-genre="{{ g.genre_name }}"
+                    class="genre-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition bg-white text-slate-700 border border-slate-300 hover:border-blue-500 hover:text-blue-600">
+              {{ g.genre_name }}
             </button>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
-            <div>
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Đạo diễn / Tác giả</span>
-              <span class="text-cyan-300 font-extrabold"><i class="fa-solid fa-user-pen mr-1"></i>{{ current_movie.director }}</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Diễn viên chính</span>
-              <span class="text-slate-200 font-bold truncate block" title="{{ current_movie.actors }}">{{ current_movie.actors }}</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Thể loại & Thời lượng</span>
-              <span class="text-emerald-300 font-bold">{{ current_movie.genre }} • {{ current_movie.duration }}</span>
-            </div>
-            <div>
-              <span class="text-slate-400 block text-[10px] uppercase font-bold">Thời hạn công chiếu</span>
-              <span class="text-amber-300 font-bold">{{ current_movie.release_date }} → {{ current_movie.end_date }}</span>
-            </div>
-          </div>
-
-          <div class="text-xs text-slate-300 leading-relaxed">
-            <span class="font-extrabold text-white"><i class="fa-solid fa-book-open text-cyan-400 mr-1.5"></i>Nội dung tóm tắt: </span>
-            {{ current_movie.description }}
-          </div>
+          {% endfor %}
+        </div>
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="movieKeywordInput" oninput="applyMovieFilters()" placeholder="Tìm tên phim, đạo diễn..."
+                 class="w-full bg-white border border-slate-300 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-600" />
         </div>
       </div>
 
-      <!-- BƯỚC 2: CHỌN NGÀY CHIẾU & KHUNG GIỜ CHIẾU -->
-      <div class="bg-slate-950 border border-cyan-500/30 rounded-2xl p-5 space-y-5">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
-          <div>
-            <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
-              <i class="fa-solid fa-calendar-check text-cyan-400"></i> Bước 2: Chọn Ngày Chiếu & Khung Giờ Chiếu
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5">Mỗi ngày và khung giờ chiếu có phòng chiếu và sơ đồ ghế trống riêng biệt trong MySQL</p>
-          </div>
-          <div class="px-3.5 py-1.5 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-xs font-extrabold text-cyan-300">
-            Đang chọn: <span class="text-amber-300">{{ current_showtime.cinema_name }}</span> • Ngày <span class="text-white">{{ current_showtime.show_date }}</span> • Ca <span class="text-emerald-400">{{ current_showtime.show_time }}</span>
-          </div>
-        </div>
+      <!-- LƯỚI 4 CỘT POSTER PHIM -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 pt-1">
+        {% for m in movies %}
+          <div class="movie-card flex flex-col justify-between rounded-2xl p-2.5 hover:bg-white hover:shadow-xl transition duration-200"
+               data-tab="{{ m.status_tab }}"
+               data-genres="{{ m.genre }}"
+               data-title="{{ m.title }} {{ m.director }} {{ m.actors }}">
+            
+            <div>
+              <a href="/booking/{{ m.movie_id }}" class="block relative aspect-[2/3] w-full rounded-2xl overflow-hidden shadow-md group bg-slate-900">
+                <img src="{{ m.poster_url }}" alt="{{ m.title }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                
+                <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-md text-xs font-black text-white shadow
+                  {{ 'bg-rose-500' if m.age_rating == 'T18' else ('bg-amber-500' if m.age_rating == 'T16' else 'bg-orange-500') }}">
+                  {{ m.age_rating }}
+                </span>
 
-        <div class="space-y-2">
-          <span class="text-xs font-extrabold text-slate-300 uppercase block">
-            <i class="fa-regular fa-calendar-days text-amber-400 mr-1"></i>1. Chọn Ngày Xem Phim:
-          </span>
-          <div class="flex flex-wrap items-center gap-2.5">
-            {% for d in available_dates %}
-              {% set is_active_date = (d == active_date) %}
-              <a href="/booking/{{ current_movie.movie_id }}?show_date={{ d }}"
-                 class="px-4 py-2.5 rounded-xl border text-xs font-extrabold transition flex items-center gap-2
-                 {{ 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.4)]' if is_active_date else 'bg-slate-900 text-slate-300 border-slate-700 hover:border-cyan-400' }}">
-                <i class="fa-solid fa-calendar-day"></i>
-                <span>Ngày {{ d }}</span>
-              </a>
-            {% endfor %}
-          </div>
-        </div>
+                {% if m.is_hot %}
+                  <div class="hot-ribbon">HOT</div>
+                {% endif %}
 
-        <div class="space-y-2">
-          <span class="text-xs font-extrabold text-slate-300 uppercase block">
-            <i class="fa-regular fa-clock text-emerald-400 mr-1"></i>2. Chọn Giờ Chiếu & Phòng Chiếu (Ngày {{ active_date }}):
-          </span>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {% for st in showtimes_for_date %}
-              {% set is_active_st = (st.showtime_id == current_showtime.showtime_id) %}
-              <a href="/booking/{{ current_movie.movie_id }}?showtime_id={{ st.showtime_id }}#seatSection"
-                 class="p-3.5 rounded-2xl border-2 transition flex items-center justify-between
-                 {{ 'bg-emerald-500/15 border-emerald-400 shadow-[0_0_25px_rgba(16,185,129,0.25)]' if is_active_st else 'bg-slate-900/90 border-slate-800 hover:border-slate-600' }}">
-                <div class="space-y-1">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-1 rounded-lg font-display font-black text-sm {{ 'bg-emerald-400 text-slate-950' if is_active_st else 'bg-slate-800 text-cyan-300' }}">
-                      {{ st.show_time }}
-                    </span>
-                    <span class="text-xs font-extrabold text-white">{{ st.cinema_name }}</span>
-                  </div>
-                  <div class="text-[11px] text-slate-400 font-semibold">
-                    <i class="fa-solid fa-tv text-cyan-400 mr-1"></i>{{ st.hall_name }}
-                  </div>
-                </div>
-                <div class="text-right">
-                  <span class="text-[10px] text-slate-400 block">Giá vé từ</span>
-                  <span class="text-xs font-black text-amber-400">{{ "{:,.0f}".format(st.base_price) }}đ</span>
-                  {% if is_active_st %}
-                    <span class="block text-[10px] font-extrabold text-emerald-400 mt-0.5">● Đang mở sơ đồ</span>
-                  {% endif %}
+                <div class="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-black/75 backdrop-blur-sm text-amber-400 font-extrabold text-xs flex items-center gap-1">
+                  <i class="fa-solid fa-star text-[10px]"></i> {{ m.rating_score }}
                 </div>
               </a>
-            {% endfor %}
+
+              <div class="mt-3.5 px-1 space-y-1">
+                <a href="/booking/{{ m.movie_id }}"
+                   class="block text-base font-extrabold text-[#1e5bb8] hover:underline truncate" title="{{ m.title }}">
+                  {{ m.title }}
+                </a>
+                <p class="text-xs text-slate-600 truncate">
+                  <span class="font-bold text-slate-800">Thể loại:</span> {{ m.genre }}
+                </p>
+                <p class="text-xs text-slate-600">
+                  <span class="font-bold text-slate-800">Thời lượng:</span> {{ m.duration }}
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-3.5 px-1">
+              <a href="/booking/{{ m.movie_id }}"
+                 class="w-full py-2.5 px-4 rounded-xl bg-[#1d569b] hover:bg-[#154278] text-white font-extrabold text-sm flex items-center justify-center relative shadow transition">
+                <span class="absolute left-3.5 text-pink-400 text-base -rotate-12">
+                  <i class="fa-solid fa-ticket"></i>
+                </span>
+                <span>MUA VÉ</span>
+              </a>
+            </div>
+
           </div>
-        </div>
+        {% endfor %}
+      </div>
+
+      <div id="emptyMovieNotice" class="hidden py-10 text-center text-slate-500 text-sm font-semibold">
+        Hiện chưa có bộ phim nào thuộc thể loại hoặc danh mục này.
       </div>
     </section>
 
     <!-- =======================================================================
-         BƯỚC 3: CHỌN GHẾ TRÊN SƠ ĐỒ 2D (3 KHỐI) + GÓC NHÌN 3D POV CHUẨN MẪU
+         KHU VỰC TRA CỨU VÉ ĐÃ ĐẶT CỦA KHÁCH HÀNG
          ======================================================================= -->
-    <div id="seatSection" class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
-
-      <!-- CỘT TRÁI: SƠ ĐỒ GHẾ RẠP 2D (KHỐI TRÁI - KHỐI GIỮA - KHỐI PHẢI) -->
-      <div class="xl:col-span-5 bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
-        <div>
-          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <div>
-              <h2 class="text-sm font-black text-white uppercase flex items-center gap-2">
-                <i class="fa-solid fa-couch text-cyan-400"></i> Bước 3: Chọn Ghế ({{ current_showtime.show_time }} • {{ current_showtime.show_date }})
-              </h2>
-              <p class="text-[11px] text-slate-400">{{ current_showtime.cinema_name }} • {{ current_showtime.hall_name }}</p>
-            </div>
-            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
-              Đã đặt: {{ occupied_seats|length }}/96 ghế
-            </span>
-          </div>
-
-          <div class="w-11/12 mx-auto mt-3 mb-3 text-center">
-            <div class="screen-arc-2d flex items-center justify-center">
-              <span class="text-[10px] font-display font-bold tracking-[0.2em] text-cyan-200">MÀN HÌNH CONG DOLBY ATMOS (18M x 8M)</span>
-            </div>
-          </div>
-
-          <!-- Nhãn 3 khối ghế giống hệt hình mẫu -->
-          <div class="w-11/12 mx-auto grid grid-cols-12 text-[10px] font-extrabold text-slate-400 uppercase mb-1.5 px-4 text-center">
-            <div class="col-span-3 text-cyan-400/90">Khối trái</div>
-            <div class="col-span-6 text-amber-400/90">Khối giữa</div>
-            <div class="col-span-3 text-cyan-400/90">Khối phải</div>
-          </div>
-
-          <div id="seatGrid2D" class="space-y-1.5 flex flex-col items-center overflow-x-auto pb-2"></div>
-        </div>
-
-        <div class="pt-3 mt-3 border-t border-slate-800 space-y-2">
-          <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 text-[10px] text-slate-300">
-            <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-slate-900 border border-sky-400"></span>Thường ({{ "{:,.0f}".format(current_showtime.base_price / 1000) }}K)</div>
-            <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-amber-500/15 border border-amber-400"></span>VIP ({{ "{:,.0f}".format((current_showtime.base_price + 15000) / 1000) }}K)</div>
-            <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-pink-500/15 border border-pink-400"></span>Sweetbox ({{ "{:,.0f}".format((current_showtime.base_price + 20000) / 1000) }}K)</div>
-            <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-emerald-500"></span>Đang chọn</div>
-            <div class="flex items-center gap-1.5"><span class="w-3.5 h-3.5 rounded bg-rose-950 border border-rose-700 opacity-60"></span>Đã đặt</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CỘT PHẢI: KHUNG MÔ PHỎNG GÓC NHÌN 3D TỪ GHẾ NGỒI (CHUẨN PHỐI CẢNH H1 & H12) -->
-      <div class="xl:col-span-7 bg-slate-950 border border-cyan-500/40 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
-        <div class="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex items-center gap-2">
-            <span id="povSeatBadge" class="px-3 py-1 rounded-lg bg-cyan-400 text-slate-950 font-black text-xs">GÓC NHÌN TỪ GHẾ D6</span>
-            <span id="povLocationBadge" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-cyan-300 font-extrabold text-xs">
-              Khối giữa • Cách màn hình ~13.8m
-            </span>
-          </div>
-
-          <div class="flex items-center gap-1.5 text-xs">
-            <button type="button" onclick="clickSeat('H1')" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-300 font-extrabold" title="Xem góc nhìn ghế H1">
-              Thử H1 (Trái, Sau)
-            </button>
-            <button type="button" onclick="clickSeat('H12')" class="px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/30 border border-cyan-400/50 text-cyan-300 font-extrabold" title="Xem góc nhìn ghế H12">
-              Thử H12 (Phải, Sau)
-            </button>
-            <button type="button" onclick="resetLook()" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold">
-              <i class="fa-solid fa-crosshairs text-cyan-400 mr-1"></i>Nhìn thẳng
-            </button>
-            <button type="button" onclick="toggleRoomLight()" id="btnLight" class="px-2.5 py-1 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 font-bold">
-              <i class="fa-solid fa-lightbulb"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="relative w-full h-[400px] bg-[#04070f] select-none overflow-hidden">
-          <canvas id="cinema3DCanvas" width="960" height="500" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
-
-          <!-- Tiêu đề lớn phía trên giống ảnh mẫu -->
-          <div class="absolute top-3 left-1/2 -translate-x-1/2 bg-slate-950/75 backdrop-blur-md border border-cyan-500/40 px-4 py-1 rounded-full pointer-events-none shadow-lg">
-            <span id="povTopBanner" class="text-xs sm:text-sm font-black tracking-wider text-white uppercase">
-              GÓC NHÌN TỪ GHẾ D6 (KHỐI GIỮA)
-            </span>
-          </div>
-
-          <!-- Cụm phím Đổi ghế nhanh ở góc trên phải -->
-          <div class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md border border-slate-700 rounded-xl p-1.5 flex flex-col items-center gap-1">
-            <span class="text-[9px] font-bold text-slate-400 uppercase px-1">Đổi ghế</span>
-            <button type="button" onclick="moveSeat(-1, 0)" class="w-6 h-5 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-[10px] font-bold"><i class="fa-solid fa-chevron-up"></i></button>
-            <div class="flex gap-1">
-              <button type="button" onclick="moveSeat(0, -1)" class="w-6 h-5 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-[10px] font-bold"><i class="fa-solid fa-chevron-left"></i></button>
-              <button type="button" onclick="moveSeat(0, 1)" class="w-6 h-5 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-[10px] font-bold"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-            <button type="button" onclick="moveSeat(1, 0)" class="w-6 h-5 rounded bg-slate-800 hover:bg-cyan-400 hover:text-slate-950 text-[10px] font-bold"><i class="fa-solid fa-chevron-down"></i></button>
-          </div>
-
-          <!-- Hộp thông số khoảng cách & vị trí ở giữa cạnh dưới giống ảnh mẫu -->
-          <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-950/90 backdrop-blur-md border border-cyan-400/50 px-5 py-1.5 rounded-xl text-center pointer-events-none shadow-[0_0_20px_rgba(6,182,212,0.25)]">
-            <div id="hudDistanceLine" class="text-[11px] font-extrabold text-cyan-300 uppercase tracking-wide">
-              KHOẢNG CÁCH TỪ MÀN HÌNH: ~13.8 mét
-            </div>
-            <div id="hudPositionLine" class="text-[10px] font-bold text-slate-200">
-              VỊ TRÍ: Hàng D, Khối giữa (D6) • MÀN HÌNH: 18m x 8m, Cong Dolby Atmos
-            </div>
-          </div>
-        </div>
-
-        <div class="p-3.5 bg-slate-900 border-t border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-          <div class="md:col-span-7 space-y-1">
-            <div class="text-xs font-extrabold text-amber-400 uppercase">
-              <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Đánh giá vị trí ghế <span id="advSeat">D6</span>:
-              <span id="advPrice" class="text-cyan-300 ml-1">65.000đ • Ghế VIP</span>
-            </div>
-            <p id="advComment" class="text-xs text-slate-300 leading-relaxed">
-              Vị trí kim cương trong rạp! Tầm mắt thẳng tâm màn hình, không mỏi cổ và nằm ngay giao điểm vàng của hệ thống loa vòm Dolby Atmos 360°.
-            </p>
-          </div>
-          <div class="md:col-span-5 grid grid-cols-2 gap-2.5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-[10px] font-bold">
-            <div>
-              <div class="flex justify-between mb-1"><span class="text-slate-400">Tầm nhìn & Cổ</span><span id="visScore" class="text-cyan-400">94%</span></div>
-              <div class="w-full h-1.5 bg-slate-800 rounded-full"><div id="visBar" class="h-full bg-cyan-400 rounded-full" style="width:94%"></div></div>
-            </div>
-            <div>
-              <div class="flex justify-between mb-1"><span class="text-slate-400">Âm thanh Atmos</span><span id="audScore" class="text-amber-400">93%</span></div>
-              <div class="w-full h-1.5 bg-slate-800 rounded-full"><div id="audBar" class="h-full bg-amber-400 rounded-full" style="width:93%"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- =======================================================================
-         BƯỚC 4: CHỌN COMBO BẮP NƯỚC & XÁC NHẬN THANH TOÁN VÉ
-         ======================================================================= -->
-    <section class="bg-slate-900/95 border border-slate-800 rounded-3xl p-6 space-y-5 shadow-2xl">
+    <section id="myTicketsSection" class="bg-slate-900/95 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
       <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
           <h2 class="text-lg font-black text-white flex items-center gap-2">
-            <i class="fa-solid fa-credit-card text-emerald-400"></i> Bước 4: Chọn Combo Bắp Nước & Hoàn Tất Đặt Vé
+            <i class="fa-solid fa-ticket text-emerald-400"></i> Vé Điện Tử Đã Đặt Của Bạn
           </h2>
-          <p class="text-xs text-slate-400 mt-0.5">
-            Phim: <b class="text-cyan-300">{{ current_movie.title }}</b> •
-            Rạp: <b class="text-amber-300">{{ current_showtime.cinema_name }} ({{ current_showtime.hall_name }})</b> •
-            Ngày <b class="text-white">{{ current_showtime.show_date }}</b> lúc <b class="text-emerald-400">{{ current_showtime.show_time }}</b>
-          </p>
+          <p class="text-xs text-slate-400">Danh sách vé gắn với SĐT tài khoản ({{ session.get('phone') }}) hoặc tra cứu bằng Mã vé</p>
         </div>
 
-        <div class="bg-slate-950 border border-emerald-500/40 rounded-2xl px-4 py-2.5 flex items-center gap-4">
-          <div class="text-right">
-            <span class="text-[10px] font-bold text-slate-400 uppercase block">Tổng thanh toán tạm tính</span>
-            <span id="liveTotalDisplay" class="text-lg font-black text-emerald-400">65,000 đ</span>
-          </div>
-          <div class="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-            <i class="fa-solid fa-calculator"></i>
-          </div>
-        </div>
+        <form action="/home#myTicketsSection" method="GET" class="flex items-center gap-2">
+          <input type="text" name="q" value="{{ search_ticket }}" placeholder="Nhập Mã vé (VD: VE001) hoặc SĐT..."
+                 class="bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white w-60" />
+          <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs">
+            Tra cứu
+          </button>
+          {% if search_ticket %}
+            <a href="/home#myTicketsSection" class="text-xs text-cyan-400 hover:underline font-semibold">Xem vé của tôi</a>
+          {% endif %}
+        </form>
       </div>
 
-      <form action="/add_ticket" method="POST" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-4">
-        <input type="hidden" name="movie_id" value="{{ current_movie.movie_id }}" />
-        <input type="hidden" name="showtime_id" value="{{ current_showtime.showtime_id }}" />
-        <input type="hidden" name="cinema_name" value="{{ current_showtime.cinema_name }}" />
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Mã vé điện tử (Tự động)</label>
-            <input type="text" name="ticket_code" id="inputTicketCode" required
-                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs font-extrabold text-cyan-300 uppercase" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Họ và tên người đặt</label>
-            <input type="text" name="customer_name" required value="{{ session.get('full_name', 'Khách hàng Beta') }}"
-                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-semibold" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Số điện thoại nhận mã vé</label>
-            <input type="text" name="customer_phone" required value="{{ session.get('phone', '0988123456') }}"
-                   class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-300 font-bold" />
-          </div>
-          <div>
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Ghế đang chọn ({{ current_showtime.show_time }})</label>
-            <input type="text" name="seats_text" id="inputSeatsText" value="D6" readonly
-                   class="w-full bg-slate-900 border border-emerald-500/60 rounded-lg px-3 py-2 text-xs font-black text-emerald-400" />
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-end">
-          <div class="lg:col-span-5">
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Chọn Combo Bắp Nước ưu đãi</label>
-            <select name="combo_id" id="selectCombo" onchange="updateLiveBill()"
-                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-amber-300 font-bold">
-              {% for cb in combos %}
-                <option value="{{ cb.combo_id }}" data-price="{{ cb.combo_price }}">
-                  {{ cb.combo_name }} (+{{ "{:,.0f}".format(cb.combo_price) }}đ) — {{ cb.combo_desc }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="lg:col-span-4">
-            <label class="block text-[11px] font-bold text-slate-400 mb-1">Phương thức thanh toán</label>
-            <select name="payment_method" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-cyan-300 font-bold">
-              <option value="Chuyển khoản QR">Chuyển khoản VietQR (Tự động)</option>
-              <option value="Ví MoMo">Ví điện tử MoMo</option>
-              <option value="VNPay QR">Cổng thanh toán VNPay</option>
-              <option value="Tiền mặt tại quầy">Tiền mặt tại quầy vé</option>
-            </select>
-          </div>
-          <div class="lg:col-span-3">
-            <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shadow-lg transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-check-double"></i>
-              <span>Xác Nhận Đặt Vé Ngay</span>
-            </button>
-          </div>
-        </div>
-      </form>
+      <div class="overflow-x-auto rounded-xl border border-slate-800">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-800/80 text-slate-200 font-bold border-b border-slate-700">
+              <th class="py-3 px-4">Mã vé</th>
+              <th class="py-3 px-4">Bộ phim & Lịch chiếu</th>
+              <th class="py-3 px-4">Cụm rạp & Phòng</th>
+              <th class="py-3 px-4">Ghế ngồi</th>
+              <th class="py-3 px-4">Combo Bắp Nước</th>
+              <th class="py-3 px-4">Trạng thái</th>
+              <th class="py-3 px-4 text-right">Tổng thanh toán</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 bg-slate-950/60">
+            {% for t in my_tickets %}
+            <tr class="hover:bg-slate-900/80">
+              <td class="py-3 px-4 font-extrabold text-cyan-400">{{ t.ticket_code }}</td>
+              <td class="py-3 px-4">
+                <div class="font-bold text-white">{{ t.movie_title }}</div>
+                <div class="text-[11px] text-amber-300">Ngày {{ t.show_date }} • Ca {{ t.show_time }}</div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="text-slate-200 font-semibold">{{ t.cinema_name }}</div>
+                <div class="text-[10px] text-slate-400">{{ t.hall_name }}</div>
+              </td>
+              <td class="py-3 px-4 font-extrabold text-emerald-400">{{ t.seats_text }} ({{ t.seat_count }} ghế)</td>
+              <td class="py-3 px-4 text-amber-300">{{ t.combo_name }}</td>
+              <td class="py-3 px-4">
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">{{ t.payment_status }}</span>
+              </td>
+              <td class="py-3 px-4 text-right font-extrabold text-rose-400">{{ "{:,.0f}".format(t.total_amount) }} đ</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-400">
+                Bạn chưa có vé nào hoặc không tìm thấy mã vé khớp. Hãy nhấn nút <b>MUA VÉ</b> trên bộ phim yêu thích để đặt chỗ!
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </section>
 
   </main>
 
-  <!-- MODAL XEM TRAILER -->
-  <div id="trailerModal" class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-4">
-    <div class="w-full max-w-3xl bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden">
-      <div class="px-4 py-3 border-b border-slate-800 flex justify-between items-center">
-        <span class="font-bold text-xs text-white">TRAILER: {{ current_movie.title }} (Đạo diễn: {{ current_movie.director }})</span>
-        <button onclick="closeTrailerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <video id="trailerVideo" controls class="w-full aspect-video bg-black" src="{{ current_movie.video_url }}"></video>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       BỘ MÁY MÔ PHỎNG KHÔNG GIAN 3D CHUẨN BỐ CỤC GHẾ H1 (TRÁI, SAU) & H12 (PHẢI, SAU)
-       ========================================================================= -->
   <script>
-    const ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-    const COLS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-    const OCCUPIED_FROM_SQL = new Set({{ occupied_seats | tojson }});
-    const MOVIE_QUOTE = {{ current_movie.quote | tojson }};
-    const BASE_PRICE = {{ current_showtime.base_price | float }};
+    let currentTabFilter = 'all';
+    let currentGenreFilter = 'all';
 
-    let defaultSeat = 'H1';
-    if (OCCUPIED_FROM_SQL.has(defaultSeat)) defaultSeat = 'D6';
-    let selectedSeats = OCCUPIED_FROM_SQL.has(defaultSeat) ? new Set() : new Set([defaultSeat]);
-    let activePovSeat = defaultSeat;
-    let povState = null;
-    let brightMode = true;
-    let lookYaw = 0, lookPitch = 0, isDragging = false, startX = 0, startY = 0;
-
-    // KÍCH THƯỚC VẬT LÝ CỦA RẠP DOLBY ATMOS (MÀN HÌNH CONG 18M x 8M, SÂU 22M)
-    const ROOM_HALF_W = 9.35; // Chiều rộng rạp 18.7m
-    const SCREEN_Z = 0.0;     // Màn hình đặt tại mốc Z = 0
-    const CEIL_Y = 9.8;       // Trần rạp cao 9.8m
-
-    // Tọa độ ngang X của 12 cột ghế chia thành 3 khối rõ rệt + 2 lối đi bậc thang rộng 1.7m
-    const SEAT_X_MAP = [
-      -8.40, -7.30, -6.20,                        // Khối trái: Cột 1, 2, 3 (Sát tường trái -9.35m)
-      -3.30, -1.98, -0.66, 0.66, 1.98, 3.30,      // Khối giữa: Cột 4, 5, 6, 7, 8, 9
-       6.20,  7.30,  8.40                         // Khối phải: Cột 10, 11, 12 (Sát tường phải +9.35m)
-    ];
-
-    function getSeatWorldX(colIdx0) {
-      return SEAT_X_MAP[Math.max(0, Math.min(11, colIdx0))];
-    }
-
-    function getRowFloorY(rIdx) {
-      // Độ cao bậc thang dốc từ Hàng A (rIdx=0) lên Hàng H (rIdx=7)
-      return 0.35 + rIdx * 0.68;
-    }
-
-    function getRowWorldZ(rIdx) {
-      // Khoảng cách từ màn hình đến từng hàng ghế (Hàng A: 4.8m -> Hàng H: 21.25m)
-      return 4.8 + rIdx * 2.35;
-    }
-
-    // Biến nội suy mượt Camera 3D
-    let camRig = {
-      x: getSeatWorldX(0),
-      y: getRowFloorY(7) + 1.42,
-      z: getRowWorldZ(7) + 1.55,
-      lookX: 2.85,
-      lookY: 3.75
-    };
-
-    document.getElementById('inputTicketCode').value = 'VE' + Math.floor(100 + Math.random() * 899);
-
-    function getSeatPrice(code) {
-      const r = code[0];
-      if (['A', 'B', 'C'].includes(r)) return BASE_PRICE;
-      if (['D', 'E', 'F'].includes(r)) return BASE_PRICE + 15000;
-      return BASE_PRICE + 20000;
-    }
-
-    function updateLiveBill() {
-      let seatTotal = 0;
-      selectedSeats.forEach(s => { seatTotal += getSeatPrice(s); });
-      const comboSel = document.getElementById('selectCombo');
-      const comboPrice = comboSel ? parseFloat(comboSel.options[comboSel.selectedIndex]?.dataset.price || 0) : 0;
-      const grandTotal = seatTotal + comboPrice;
-      document.getElementById('liveTotalDisplay').textContent = grandTotal.toLocaleString('vi-VN') + ' đ';
-    }
-
-    function getSeatPositionDescription(rowChar, colNum) {
-      const rIdx = ROWS.indexOf(rowChar);
-      let blockName = 'Khối giữa';
-      let sideShort = 'Giữa';
-      if (colNum <= 3) { blockName = 'Góc trái, Khối trái'; sideShort = 'Trái'; }
-      else if (colNum >= 10) { blockName = 'Góc phải, Khối phải'; sideShort = 'Phải'; }
-
-      let rowDesc = `Hàng ${rowChar}`;
-      let depthShort = `Hàng ${rowChar}`;
-      if (rIdx === 7) { rowDesc = 'Cuối cùng'; depthShort = 'Sau'; }
-      else if (rIdx >= 5) { rowDesc = 'Tầng cao'; depthShort = 'Sau'; }
-      else if (rIdx <= 1) { rowDesc = 'Sát màn hình'; depthShort = 'Trước'; }
-
-      const wx = getSeatWorldX(colNum - 1);
-      const wz = getRowWorldZ(rIdx);
-      const wy = getRowFloorY(rIdx) + 1.2;
-      const distM = Math.sqrt(wx * wx + (5.1 - wy) * (5.1 - wy) + wz * wz).toFixed(1);
-
-      return {
-        distM,
-        banner: `GÓC NHÌN TỪ GHẾ ${rowChar}${colNum} (${sideShort.toUpperCase()}, ${depthShort.toUpperCase()})`,
-        locBadge: `${blockName} • Cách màn hình ~${distM}m`,
-        distLine: `KHOẢNG CÁCH TỪ MÀN HÌNH: ~${distM} mét`,
-        posLine: `VỊ TRÍ: ${rowDesc}, ${blockName} (${rowChar}${colNum}) • MÀN HÌNH: 18m x 8m, Cong`
-      };
-    }
-
-    function render2DMap() {
-      const container = document.getElementById('seatGrid2D');
-      let html = '';
-      ROWS.forEach(r => {
-        const isVip = ['D', 'E', 'F'].includes(r);
-        const isSweet = ['G', 'H'].includes(r);
-        html += `<div class="flex items-center gap-1 sm:gap-1.5">`;
-        html += `<span class="w-4 text-center text-[11px] font-black ${isVip ? 'text-amber-400' : isSweet ? 'text-pink-400' : 'text-slate-400'}">${r}</span>`;
-
-        COLS.forEach(c => {
-          const code = `${r}${c}`;
-          const isOcc = OCCUPIED_FROM_SQL.has(code);
-          const isSel = selectedSeats.has(code);
-          const isFocus = activePovSeat === code;
-          const gap = (c === 3 || c === 9) ? 'mr-2.5 sm:mr-3.5' : '';
-
-          let cls = isVip ? "bg-amber-500/15 border-amber-400 text-amber-200" :
-                    isSweet ? "bg-pink-500/15 border-pink-400 text-pink-200" :
-                    "bg-slate-900 border-sky-400/60 text-sky-200";
-
-          if (isOcc) cls = "bg-rose-950/70 border-rose-700/60 text-rose-400/50 cursor-not-allowed";
-          else if (isSel) cls = "bg-emerald-500 border-emerald-300 text-slate-950 font-black";
-
-          html += `
-            <button type="button" onclick="clickSeat('${code}')"
-              class="seat-btn w-6 h-6 sm:w-7 sm:h-7 rounded-md border text-[10px] font-bold flex items-center justify-center ${cls} ${isFocus ? 'seat-pov-focus' : ''} ${gap}">
-              ${isOcc ? '×' : code}
-            </button>`;
-        });
-
-        html += `<span class="w-4 text-center text-[11px] font-black ${isVip ? 'text-amber-400' : isSweet ? 'text-pink-400' : 'text-slate-400'}">${r}</span></div>`;
+    function filterByTab(tabName) {
+      currentTabFilter = tabName;
+      ['upcoming', 'showing', 'special', 'all'].forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if (btn) btn.classList.toggle('beta-tab-active', t === tabName);
       });
-      container.innerHTML = html;
-      document.getElementById('inputSeatsText').value = Array.from(selectedSeats).sort().join(', ');
-      updateLiveBill();
+      applyMovieFilters();
     }
 
-    async function clickSeat(code) {
-      activePovSeat = code;
-      lookYaw = 0; lookPitch = 0;
-
-      if (!OCCUPIED_FROM_SQL.has(code)) {
-        if (selectedSeats.has(code)) selectedSeats.delete(code);
-        else selectedSeats.add(code);
-      }
-      render2DMap();
-      await loadPovFromPython(code);
-    }
-
-    async function loadPovFromPython(code) {
-      const res = await fetch(`/api/pov?seat=${code}&base_price=${BASE_PRICE}`);
-      povState = await res.json();
-
-      const rChar = povState.row;
-      const cNum = parseInt(povState.seat.slice(1), 10) || 6;
-      const info = getSeatPositionDescription(rChar, cNum);
-
-      document.getElementById('povSeatBadge').textContent = `GHẾ ${povState.seat} (${povState.seat_type.toUpperCase()})`;
-      document.getElementById('povLocationBadge').textContent = info.locBadge;
-      document.getElementById('povTopBanner').textContent = info.banner;
-      document.getElementById('hudDistanceLine').textContent = info.distLine;
-      document.getElementById('hudPositionLine').textContent = info.posLine;
-
-      document.getElementById('advSeat').textContent = povState.seat;
-      document.getElementById('advPrice').textContent = `${povState.price.toLocaleString('vi-VN')}đ • ${povState.seat_type}`;
-      document.getElementById('advComment').textContent = povState.advice;
-      document.getElementById('visScore').textContent = `${povState.visual_score}%`;
-      document.getElementById('visBar').style.width = `${povState.visual_score}%`;
-      document.getElementById('audScore').textContent = `${povState.audio_score}%`;
-      document.getElementById('audBar').style.width = `${povState.audio_score}%`;
-    }
-
-    function moveSeat(dR, dC) {
-      const rIdx = ROWS.indexOf(activePovSeat[0]);
-      const cNum = parseInt(activePovSeat.slice(1), 10);
-      const nextR = ROWS[Math.max(0, Math.min(7, rIdx + dR))];
-      const nextC = Math.max(1, Math.min(12, cNum + dC));
-      clickSeat(`${nextR}${nextC}`);
-    }
-
-    function resetLook() { lookYaw = 0; lookPitch = 0; }
-    function toggleRoomLight() {
-      brightMode = !brightMode;
-      document.getElementById('btnLight').innerHTML = brightMode
-        ? `<i class="fa-solid fa-lightbulb"></i>`
-        : `<i class="fa-solid fa-moon"></i>`;
-    }
-
-    const canvas = document.getElementById('cinema3DCanvas');
-    canvas.addEventListener('mousedown', e => { isDragging = true; startX = e.clientX; startY = e.clientY; });
-    window.addEventListener('mousemove', e => {
-      if (!isDragging) return;
-      lookYaw = Math.max(-40, Math.min(40, lookYaw + (e.clientX - startX) * 0.22));
-      lookPitch = Math.max(-20, Math.min(20, lookPitch + (e.clientY - startY) * 0.18));
-      startX = e.clientX; startY = e.clientY;
-    });
-    window.addEventListener('mouseup', () => isDragging = false);
-
-    // Tạo danh sách các ngôi sao cố định cho cảnh phim Dolby Atmos vũ trụ
-    const STARS = Array.from({ length: 55 }, (_, i) => ({
-      u: ((i * 73) % 100) / 100,
-      v: ((i * 41) % 100) / 100,
-      r: (i % 3 === 0) ? 1.8 : 1.1
-    }));
-
-    let t = 0;
-    function drawAuditorium3D() {
-      t += 0.025;
-      const ctx = canvas.getContext('2d');
-      const W = canvas.width, H = canvas.height;
-
-      // 1. Xóa sạch khung vẽ
-      ctx.clearRect(0, 0, W, H);
-
-      // 2. Xác định tọa độ 3D của ghế đang chọn
-      const seatStr = activePovSeat || 'H1';
-      const targetRow = Math.max(0, ROWS.indexOf(seatStr[0]));
-      const targetCol0 = Math.max(0, Math.min(11, (parseInt(seatStr.slice(1), 10) || 1) - 1));
-      const seatX = getSeatWorldX(targetCol0);
-      const colOffset = (targetCol0 + 1) - 6.5; // -5.5 (H1) đến +5.5 (H12)
-
-      // Đặt mắt Camera ngay phía trên/sau lưng ghế đang chọn để thấy cả ghế mình ngồi, lối đi bậc thang và toàn cảnh rạp
-      const destCamX = seatX;
-      const destCamY = getRowFloorY(targetRow) + 1.42;
-      const destCamZ = getRowWorldZ(targetRow) + 1.55;
-
-      // Điểm đích hướng nhìn (Look-At Target) tại bức tường màn hình (Z = 0):
-      // Khi ngồi ở H1 (bên trái, seatX = -8.4m), mắt hướng về phía phải tâm màn hình một chút (lookX = +2.85m):
-      // -> Vách tường trái ôm sát mép trái ảnh, màn hình nằm ở bên trái-giữa với cạnh trái cao to hơn cạnh phải,
-      // -> Lối đi bậc thang nằm ngay giữa ảnh và vách tường phải trải rộng bên phải (Chuẩn 100% ảnh mẫu!)
-      // Khi ngồi ở H12 (bên phải, seatX = +8.4m), lookX = -2.85m -> Đối xứng gương hoàn hảo!
-      const destLookX = -colOffset * 0.52;
-      const destLookY = 3.55 - (7 - targetRow) * 0.18;
-
-      camRig.x += (destCamX - camRig.x) * 0.22;
-      camRig.y += (destCamY - camRig.y) * 0.22;
-      camRig.z += (destCamZ - camRig.z) * 0.22;
-      camRig.lookX += (destLookX - camRig.lookX) * 0.22;
-      camRig.lookY += (destLookY - camRig.lookY) * 0.22;
-
-      const camX = camRig.x;
-      const camY = camRig.y;
-      const camZ = camRig.z;
-
-      const dx = camRig.lookX - camX;
-      const dy = camRig.lookY - camY;
-      const dz = camZ - SCREEN_Z;
-
-      const baseYaw = Math.atan2(dx, dz);
-      const basePitch = Math.atan2(dy, Math.sqrt(dx * dx + dz * dz));
-
-      const camYaw = baseYaw - (lookYaw * Math.PI / 180);
-      const camPitch = basePitch - (lookPitch * Math.PI / 180);
-
-      const cosY = Math.cos(camYaw), sinY = Math.sin(camYaw);
-      const cosP = Math.cos(camPitch), sinP = Math.sin(camPitch);
-      const focal = 660;
-      const cx = W * 0.5;
-      const cy = H * 0.45;
-
-      // Hàm chiếu điểm 3D (wx, wy, wz) sang tọa độ màn hình 2D
-      function project3D(wx, wy, wz) {
-        const rx = wx - camX;
-        const ry = wy - camY;
-        const rz = camZ - wz;
-
-        const x1 = rx * cosY - rz * sinY;
-        const z1 = rx * sinY + rz * cosY;
-
-        const y2 = ry * cosP - z1 * sinP;
-        const z2 = ry * sinP + z1 * cosP;
-
-        const safeZ = Math.max(0.35, z2);
-        const scale = focal / safeZ;
-        return {
-          x: cx + x1 * scale,
-          y: cy - y2 * scale,
-          scale: scale,
-          z: safeZ
-        };
-      }
-
-      function fillPoly(pts, fillStyle, strokeStyle = null, lineWidth = 1) {
-        if (!pts || pts.length < 3) return;
-        ctx.beginPath();
-        ctx.moveTo(pts[0].x, pts[0].y);
-        for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
-        ctx.closePath();
-        if (fillStyle) { ctx.fillStyle = fillStyle; ctx.fill(); }
-        if (strokeStyle) { ctx.strokeStyle = strokeStyle; ctx.lineWidth = lineWidth; ctx.stroke(); }
-      }
-
-      // =======================================================================
-      // 3. VẼ TRẦN RẠP, VÁCH TƯỜNG TIÊU ÂM TRÁI/PHẢI & SÀN DỐC
-      // =======================================================================
-      const backZ = camZ + 1.2;
-      const backFloorY = getRowFloorY(targetRow) + 0.2;
-
-      const fTL = project3D(-ROOM_HALF_W, CEIL_Y, SCREEN_Z);
-      const fTR = project3D(ROOM_HALF_W, CEIL_Y, SCREEN_Z);
-      const fBR = project3D(ROOM_HALF_W, 0.0, SCREEN_Z);
-      const fBL = project3D(-ROOM_HALF_W, 0.0, SCREEN_Z);
-
-      const nTL = project3D(-ROOM_HALF_W, CEIL_Y, backZ);
-      const nTR = project3D(ROOM_HALF_W, CEIL_Y, backZ);
-      const nBR = project3D(ROOM_HALF_W, backFloorY, backZ);
-      const nBL = project3D(-ROOM_HALF_W, backFloorY, backZ);
-
-      ctx.fillStyle = '#050811';
-      ctx.fillRect(0, 0, W, H);
-
-      // 3.1. Trần rạp chia ô tiêu âm & đèn Downlight âm trần
-      const ceilGrad = ctx.createLinearGradient(0, 0, 0, Math.max(fTL.y, fTR.y));
-      ceilGrad.addColorStop(0, brightMode ? '#141d2f' : '#080d18');
-      ceilGrad.addColorStop(1, brightMode ? '#0b1220' : '#050912');
-      fillPoly([nTL, nTR, fTR, fTL], ceilGrad);
-
-      // Lưới kẻ ô trần rạp & đèn Spotlight âm trần giống ảnh mẫu
-      for (let gz = 2.0; gz <= camZ; gz += 3.5) {
-        const cL = project3D(-ROOM_HALF_W, CEIL_Y, gz);
-        const cR = project3D(ROOM_HALF_W, CEIL_Y, gz);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.12)';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(cL.x, cL.y); ctx.lineTo(cR.x, cR.y); ctx.stroke();
-
-        [-5.5, 0, 5.5].forEach(lx => {
-          const sp = project3D(lx, CEIL_Y, gz);
-          if (sp.y > 0 && sp.y < H * 0.4) {
-            const glowR = Math.max(6, sp.scale * 0.35);
-            const g = ctx.createRadialGradient(sp.x, sp.y, 1, sp.x, sp.y, glowR);
-            g.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
-            g.addColorStop(0.4, 'rgba(56, 189, 248, 0.18)');
-            g.addColorStop(1, 'transparent');
-            ctx.fillStyle = g;
-            ctx.beginPath(); ctx.arc(sp.x, sp.y, glowR, 0, Math.PI * 2); ctx.fill();
-          }
-        });
-      }
-      for (let gx = -6.0; gx <= 6.0; gx += 3.0) {
-        const cF = project3D(gx, CEIL_Y, SCREEN_Z);
-        const cB = project3D(gx, CEIL_Y, backZ);
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.10)';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(cF.x, cF.y); ctx.lineTo(cB.x, cB.y); ctx.stroke();
-      }
-
-      // 3.2. Hai vách tường tiêu âm Trái & Phải
-      const lWallGrad = ctx.createLinearGradient(0, cy, fTL.x, cy);
-      lWallGrad.addColorStop(0, brightMode ? '#1b263b' : '#0b111e');
-      lWallGrad.addColorStop(1, brightMode ? '#0d1526' : '#060a14');
-      fillPoly([nTL, fTL, fBL, nBL], lWallGrad);
-
-      const rWallGrad = ctx.createLinearGradient(W, cy, fTR.x, cy);
-      rWallGrad.addColorStop(0, brightMode ? '#1b263b' : '#0b111e');
-      rWallGrad.addColorStop(1, brightMode ? '#0d1526' : '#060a14');
-      fillPoly([fTR, nTR, nBR, fBR], rWallGrad);
-
-      // 3.3. Sàn rạp dốc bậc thang
-      const floorGrad = ctx.createLinearGradient(0, fBL.y, 0, H);
-      floorGrad.addColorStop(0, '#060b14');
-      floorGrad.addColorStop(0.5, '#0c1629');
-      floorGrad.addColorStop(1, '#050912');
-      fillPoly([fBL, fBR, nBR, nBL], floorGrad);
-
-      // 3.4. Bức tường mặt trước bao quanh màn hình
-      fillPoly([fTL, fTR, fBR, fBL], '#070c18', 'rgba(51, 65, 85, 0.5)', 1);
-
-      // 3.5. Các tấm ốp tiêu âm dọc, khe đèn LED vàng ấm & Loa vòm Dolby Atmos trên 2 vách tường
-      const wallZList = [1.8, 4.5, 7.2, 9.9, 12.6, 15.3, 18.0, 20.6];
-      wallZList.forEach(wz => {
-        if (wz >= camZ + 0.2) return;
-        const flY = Math.max(0, 0.35 + ((wz - 4.8) / 2.35) * 0.68);
-
-        [-ROOM_HALF_W, ROOM_HALF_W].forEach(wx => {
-          const isLeft = wx < 0;
-          const pTop = project3D(wx, CEIL_Y - 0.3, wz);
-          const pBot = project3D(wx, flY, wz);
-
-          // Khe đèn LED dọc trên vách tường tiêu âm
-          ctx.strokeStyle = brightMode ? 'rgba(253, 224, 71, 0.42)' : 'rgba(56, 189, 248, 0.18)';
-          ctx.lineWidth = Math.max(1.2, pTop.scale * 0.032);
-          ctx.beginPath(); ctx.moveTo(pTop.x, pTop.y); ctx.lineTo(pBot.x, pBot.y); ctx.stroke();
-
-          // Thùng loa vòm Dolby Atmos đen treo cao dọc vách tường
-          const spkY = flY + (CEIL_Y - flY) * 0.62;
-          const spk = project3D(wx + (isLeft ? 0.12 : -0.12), spkY, wz);
-          const sw = Math.max(4, Math.min(14, spk.scale * 0.18));
-          const sh = sw * 1.35;
-
-          ctx.fillStyle = '#090d16';
-          ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-          ctx.lineWidth = 1.1;
-          ctx.beginPath();
-          ctx.roundRect(spk.x - sw * 0.5, spk.y - sh * 0.5, sw, sh, 2);
-          ctx.fill();
-          ctx.stroke();
-        });
+    function filterByGenre(genreName) {
+      currentGenreFilter = genreName;
+      document.querySelectorAll('.genre-filter-btn').forEach(btn => {
+        const isActive = (genreName === 'all' && btn.id === 'genre-btn-all') || (btn.dataset.genre === genreName);
+        btn.className = isActive
+          ? 'genre-filter-btn px-3.5 py-1.5 rounded-full text-xs font-extrabold transition bg-blue-600 text-white shadow'
+          : 'genre-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition bg-white text-slate-700 border border-slate-300 hover:border-blue-500 hover:text-blue-600';
       });
-
-      // =======================================================================
-      // 4. VẼ MÀN HÌNH CONG 18M x 8M DOLBY ATMOS (CHUẨN PHỐI CẢNH HÌNH THANG)
-      // =======================================================================
-      const SEGMENTS = 18;
-      const scrHalfW = 8.15; // Rộng ~16.3m - 18m lọt lòng rạp
-      const scrTopY = 8.65;
-      const scrBotY = 1.75;
-      const topCurvePts = [];
-      const botCurvePts = [];
-
-      for (let i = 0; i <= SEGMENTS; i++) {
-        const u = (i / SEGMENTS) * 2 - 1; // -1 (mép trái) -> +1 (mép phải)
-        const wx = u * scrHalfW;
-        // Độ cong màn hình: tâm màn hình lùi sâu nhẹ
-        const wz = SCREEN_Z - (1 - u * u) * 0.55;
-        topCurvePts.push(project3D(wx, scrTopY, wz));
-        botCurvePts.push(project3D(wx, scrBotY, wz));
-      }
-
-      const scrOutlinePts = [...topCurvePts, ...botCurvePts.slice().reverse()];
-      const scrCenter = project3D(0, (scrTopY + scrBotY) * 0.5, SCREEN_Z - 0.55);
-
-      // Ánh sáng hắt từ màn hình lên trần và sàn sân khấu
-      const ambiGrad = ctx.createRadialGradient(scrCenter.x, scrCenter.y, 30, scrCenter.x, scrCenter.y, W * 0.55);
-      ambiGrad.addColorStop(0, 'rgba(56, 189, 248, 0.20)');
-      ambiGrad.addColorStop(0.5, 'rgba(249, 115, 22, 0.07)');
-      ambiGrad.addColorStop(1, 'transparent');
-      ctx.fillStyle = ambiGrad;
-      ctx.fillRect(0, 0, W, H);
-
-      // Cắt khung theo đúng hình thang cong 3D của màn hình
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(scrOutlinePts[0].x, scrOutlinePts[0].y);
-      for (let i = 1; i < scrOutlinePts.length; i++) ctx.lineTo(scrOutlinePts[i].x, scrOutlinePts[i].y);
-      ctx.closePath();
-      ctx.clip();
-
-      const sMinX = Math.min(topCurvePts[0].x, botCurvePts[0].x);
-      const sMaxX = Math.max(topCurvePts[SEGMENTS].x, botCurvePts[SEGMENTS].x);
-      const sMinY = Math.min(topCurvePts[0].y, topCurvePts[SEGMENTS].y, topCurvePts[9].y);
-      const sMaxY = Math.max(botCurvePts[0].y, botCurvePts[SEGMENTS].y, botCurvePts[9].y);
-      const sW = Math.max(20, sMaxX - sMinX);
-      const sH = Math.max(20, sMaxY - sMinY);
-
-      // Nền đại cảnh Vũ trụ Sci-Fi (Xanh dương bên trái - Cam rực lửa bên phải giống ảnh mẫu)
-      const bgGrad = ctx.createLinearGradient(sMinX, sMinY, sMaxX, sMaxY);
-      bgGrad.addColorStop(0, '#040b1c');
-      bgGrad.addColorStop(0.28, '#0284c7');
-      bgGrad.addColorStop(0.52, '#0f172a');
-      bgGrad.addColorStop(0.78, '#ea580c');
-      bgGrad.addColorStop(1, '#3b0764');
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(sMinX, sMinY, sW, sH);
-
-      // Tinh vân xanh dương bên trái & tinh vân cam rực bên phải màn hình
-      const leftNebulaX = sMinX + sW * 0.30 + Math.sin(t * 0.7) * 12;
-      const leftNebulaY = sMinY + sH * 0.48;
-      const nebL = ctx.createRadialGradient(leftNebulaX, leftNebulaY, 5, leftNebulaX, leftNebulaY, sH * 0.55);
-      nebL.addColorStop(0, 'rgba(224, 242, 254, 0.9)');
-      nebL.addColorStop(0.35, 'rgba(56, 189, 248, 0.55)');
-      nebL.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebL;
-      ctx.beginPath(); ctx.arc(leftNebulaX, leftNebulaY, sH * 0.55, 0, Math.PI * 2); ctx.fill();
-
-      const rightNebulaX = sMinX + sW * 0.68 - Math.cos(t * 0.7) * 12;
-      const rightNebulaY = sMinY + sH * 0.45;
-      const nebR = ctx.createRadialGradient(rightNebulaX, rightNebulaY, 5, rightNebulaX, rightNebulaY, sH * 0.52);
-      nebR.addColorStop(0, 'rgba(254, 243, 199, 0.92)');
-      nebR.addColorStop(0.35, 'rgba(249, 115, 22, 0.65)');
-      nebR.addColorStop(1, 'transparent');
-      ctx.fillStyle = nebR;
-      ctx.beginPath(); ctx.arc(rightNebulaX, rightNebulaY, sH * 0.52, 0, Math.PI * 2); ctx.fill();
-
-      // Các ngôi sao lấp lánh trong cảnh phim
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      STARS.forEach(st => {
-        const sx = sMinX + st.u * sW;
-        const sy = sMinY + st.v * sH;
-        ctx.beginPath(); ctx.arc(sx, sy, st.r, 0, Math.PI * 2); ctx.fill();
-      });
-
-      // LOGO DOLBY ATMOS CHÍNH GIỮA MÀN HÌNH (Nghiêng theo đúng mặt phẳng 3D của màn hình)
-      const screenMidAngle = Math.atan2(
-        (topCurvePts[SEGMENTS].y - topCurvePts[0].y) + (botCurvePts[SEGMENTS].y - botCurvePts[0].y),
-        (topCurvePts[SEGMENTS].x - topCurvePts[0].x) + (botCurvePts[SEGMENTS].x - botCurvePts[0].x)
-      );
-      const logoScale = Math.max(0.65, Math.min(1.25, sH / 160));
-      ctx.save();
-      ctx.translate(scrCenter.x, scrCenter.y - 6 * logoScale);
-      ctx.rotate(screenMidAngle);
-      ctx.scale(logoScale, logoScale);
-
-      // Biểu tượng Double-D chuẩn Dolby
-      ctx.fillStyle = 'rgba(5, 10, 24, 0.72)';
-      ctx.beginPath(); ctx.roundRect(-34, -24, 68, 52, 8); ctx.fill();
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(-24, -18, 20, 24);
-      ctx.fillRect(4, -18, 20, 24);
-      ctx.fillStyle = '#090d16';
-      ctx.beginPath(); ctx.arc(-18, -6, 8, -Math.PI * 0.5, Math.PI * 0.5); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.arc(18, -6, 8, Math.PI * 0.5, -Math.PI * 0.5); ctx.closePath(); ctx.fill();
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 9px "Orbitron", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('DOLBY', 0, 16);
-      ctx.font = '700 7.5px "Orbitron", sans-serif';
-      ctx.fillStyle = '#7dd3fc';
-      ctx.fillText('ATMOS', 0, 25);
-      ctx.restore();
-
-      // Phụ đề câu thoại căn nghiêng theo cạnh đáy màn hình
-      const subL = botCurvePts[2], subR = botCurvePts[SEGMENTS - 2];
-      const subMidX = (subL.x + subR.x) * 0.5;
-      const subMidY = (subL.y + subR.y) * 0.5;
-      const subAngle = Math.atan2(subR.y - subL.y, subR.x - subL.x);
-      const subW = Math.min(sW * 0.80, Math.hypot(subR.x - subL.x, subR.y - subL.y));
-      ctx.save();
-      ctx.translate(subMidX, subMidY - 14 * logoScale);
-      ctx.rotate(subAngle);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.74)';
-      ctx.beginPath(); ctx.roundRect(-subW * 0.5, -10, subW, 18, 4); ctx.fill();
-      ctx.fillStyle = '#fde047';
-      ctx.font = 'bold 10.5px "Be Vietnam Pro", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(MOVIE_QUOTE, 0, 3);
-      ctx.restore();
-
-      ctx.restore(); // Đóng clip màn hình
-
-      // Viền khung màn hình
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.85)';
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      ctx.moveTo(scrOutlinePts[0].x, scrOutlinePts[0].y);
-      for (let i = 1; i < scrOutlinePts.length; i++) ctx.lineTo(scrOutlinePts[i].x, scrOutlinePts[i].y);
-      ctx.closePath();
-      ctx.stroke();
-
-      // =======================================================================
-      // 5. VẼ 2 LỐI ĐI BẬC THANG TRẢI THẢM & 3 KHỐI GHẾ DA (KHỐI TRÁI - GIỮA - PHẢI)
-      // =======================================================================
-      // 5.1. Vẽ 2 dải thảm lối đi bậc thang (Giữa Khối trái - Khối giữa và Khối giữa - Khối phải)
-      const aisles = [
-        { xL: -5.65, xR: -3.85 }, // Lối đi bậc thang trái
-        { xL:  3.85, xR:  5.65 }  // Lối đi bậc thang phải
-      ];
-
-      aisles.forEach(ai => {
-        const aFrontL = project3D(ai.xL, 0.35, 4.2);
-        const aFrontR = project3D(ai.xR, 0.35, 4.2);
-        const aBackR = project3D(ai.xR, getRowFloorY(targetRow) + 0.1, camZ - 0.35);
-        const aBackL = project3D(ai.xL, getRowFloorY(targetRow) + 0.1, camZ - 0.35);
-        fillPoly([aFrontL, aFrontR, aBackR, aBackL], 'rgba(15, 23, 42, 0.92)', 'rgba(56, 189, 248, 0.20)', 1);
-      });
-
-      // 5.2. Vẽ lần lượt các hàng ghế từ Hàng A (r = 0) đến chính hàng ghế đang ngồi (r = targetRow)
-      for (let r = 0; r <= targetRow; r++) {
-        const rz = getRowWorldZ(r);
-        const rFloor = getRowFloorY(r);
-        const isVipRow = (r >= 3 && r <= 5);
-        const isSweetRow = (r >= 6);
-
-        // Vạch đèn LED bậc thang trên 2 lối đi
-        aisles.forEach(ai => {
-          const stL = project3D(ai.xL + 0.12, rFloor + 0.04, rz + 0.3);
-          const stR = project3D(ai.xR - 0.12, rFloor + 0.04, rz + 0.3);
-          ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-          ctx.lineWidth = Math.max(1.2, stL.scale * 0.035);
-          ctx.beginPath(); ctx.moveTo(stL.x, stL.y); ctx.lineTo(stR.x, stR.y); ctx.stroke();
-        });
-
-        // Sắp xếp thứ tự vẽ các cột ghế từ xa mắt nhất đến gần mắt nhất (Painter's Algorithm)
-        const colOrder = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-        colOrder.sort((a, b) => Math.abs(getSeatWorldX(b) - camX) - Math.abs(getSeatWorldX(a) - camX));
-
-        colOrder.forEach(c => {
-          const sx = getSeatWorldX(c);
-          const halfW = 0.44;
-          const seatBotY = rFloor + 0.05;
-          const seatTopY = rFloor + 0.86;
-          const headTopY = rFloor + 1.04;
-
-          const seatCode = `${ROWS[r]}${c + 1}`;
-          const isCurrentPov = (seatCode === seatStr);
-          const isBooked = OCCUPIED_FROM_SQL.has(seatCode);
-          const isSelectedByMe = selectedSeats.has(seatCode);
-
-          // Tọa độ mặt trước và mặt sau của lưng ghế có độ dày 3D (0.16m)
-          const zFront = rz - 0.08;
-          const zBack = rz + 0.08;
-
-          const bTL = project3D(sx - halfW, seatTopY, zBack);
-          const bTR = project3D(sx + halfW, seatTopY, zBack);
-          const bBR = project3D(sx + halfW, seatBotY, zBack);
-          const bBL = project3D(sx - halfW, seatBotY, zBack);
-
-          const fTL_s = project3D(sx - halfW * 0.92, seatTopY, zFront);
-          const fTR_s = project3D(sx + halfW * 0.92, seatTopY, zFront);
-
-          // Màu da ghế đen tuyền sang trọng giống ảnh mẫu (viền sáng nhẹ để phân biệt khối ghế)
-          let bodyColor = '#111622';
-          let topRimColor = '#1e293b';
-          let borderStroke = 'rgba(148, 163, 184, 0.28)';
-
-          if (isVipRow) {
-            bodyColor = '#161926';
-            borderStroke = 'rgba(251, 191, 36, 0.35)';
-          } else if (isSweetRow) {
-            bodyColor = '#181524';
-            borderStroke = 'rgba(244, 114, 182, 0.35)';
-          }
-          if (isBooked) {
-            bodyColor = '#2a1215';
-            borderStroke = 'rgba(244, 63, 94, 0.5)';
-          }
-          if (isSelectedByMe) {
-            bodyColor = '#0c2e27';
-            borderStroke = 'rgba(52, 211, 153, 0.65)';
-          }
-          if (isCurrentPov) {
-            bodyColor = '#0e293b';
-            borderStroke = '#22d3ee';
-          }
-
-          // 1. Vẽ hai tay vịn kiêm khay để cốc (Armrests) hai bên ghế
-          const armTopY = rFloor + 0.52;
-          const armL_T = project3D(sx - halfW * 1.08, armTopY, zBack);
-          const armL_B = project3D(sx - halfW * 1.08, seatBotY, zBack);
-          const armR_T = project3D(sx + halfW * 1.08, armTopY, zBack);
-          const armR_B = project3D(sx + halfW * 1.08, seatBotY, zBack);
-
-          ctx.strokeStyle = '#090d14';
-          ctx.lineWidth = Math.max(2, bTL.scale * 0.10);
-          ctx.beginPath(); ctx.moveTo(armL_T.x, armL_T.y); ctx.lineTo(armL_B.x, armL_B.y); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(armR_T.x, armR_T.y); ctx.lineTo(armR_B.x, armR_B.y); ctx.stroke();
-
-          // 2. Vẽ thân lưng ghế da
-          fillPoly([bTL, bTR, bBR, bBL], bodyColor, borderStroke, isCurrentPov ? 2.2 : 1.0);
-
-          // 3. Vẽ gối tựa đầu (Headrest) bo nổi khối phía trên
-          const hTL = project3D(sx - halfW * 0.82, headTopY, zBack);
-          const hTR = project3D(sx + halfW * 0.82, headTopY, zBack);
-          const hBR = project3D(sx + halfW * 0.88, seatTopY - 0.03, zBack);
-          const hBL = project3D(sx - halfW * 0.88, seatTopY - 0.03, zBack);
-          const fHTL = project3D(sx - halfW * 0.78, headTopY, zFront);
-          const fHTR = project3D(sx + halfW * 0.78, headTopY, zFront);
-
-          // Đỉnh gối tựa đầu bắt sáng từ màn hình chiếu tới
-          fillPoly([fHTL, fHTR, hTR, hTL], isCurrentPov ? '#22d3ee' : topRimColor, borderStroke, 0.8);
-          fillPoly([hTL, hTR, hBR, hBL], isCurrentPov ? '#153e5c' : '#171e2e', borderStroke, isCurrentPov ? 1.8 : 0.9);
-
-          // 4. Vẽ vòng tròn khay để cốc trên tay vịn ở các hàng ghế gần mắt
-          if (r >= targetRow - 2) {
-            const cupPos = project3D(sx + (c < 6 ? halfW * 1.05 : -halfW * 1.05), armTopY + 0.03, zBack + 0.04);
-            const cupR = Math.max(2.2, cupPos.scale * 0.065);
-            ctx.fillStyle = '#05080f';
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.arc(cupPos.x, cupPos.y, cupR, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-          }
-
-          // 5. Nếu đây chính là ghế đang chọn (VD: H1 ở góc dưới trái hoặc H12 ở góc dưới phải):
-          // Vẽ huy hiệu phát sáng Neon giống hệt nhãn [H1] và [H12] trong ảnh mẫu!
-          if (isCurrentPov) {
-            const badgeCenter = project3D(sx, (seatTopY + seatBotY) * 0.52, zBack + 0.05);
-            const boxSize = Math.max(38, Math.min(54, badgeCenter.scale * 0.85));
-
-            ctx.save();
-            ctx.shadowColor = '#22d3ee';
-            ctx.shadowBlur = 16;
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.90)';
-            ctx.strokeStyle = '#22d3ee';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.roundRect(badgeCenter.x - boxSize * 0.55, badgeCenter.y - boxSize * 0.45, boxSize * 1.1, boxSize * 0.9, 10);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `900 ${Math.round(boxSize * 0.36)}px "Be Vietnam Pro", sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(seatStr, badgeCenter.x, badgeCenter.y + 1);
-            ctx.restore();
-          }
-        });
-      }
-
-      requestAnimationFrame(drawAuditorium3D);
+      applyMovieFilters();
     }
 
-    function openTrailerModal() { document.getElementById('trailerModal').classList.remove('hidden'); }
-    function closeTrailerModal() {
-      document.getElementById('trailerVideo').pause();
-      document.getElementById('trailerModal').classList.add('hidden');
+    function applyMovieFilters() {
+      const kw = (document.getElementById('movieKeywordInput')?.value || '').trim().toLowerCase();
+      let visibleCount = 0;
+      document.querySelectorAll('.movie-card').forEach(card => {
+        const cardTab = card.dataset.tab;
+        const cardGenres = (card.dataset.genres || '').toLowerCase();
+        const cardTitle = (card.dataset.title || '').toLowerCase();
+
+        const matchTab = (currentTabFilter === 'all') || (cardTab === currentTabFilter);
+        const matchGenre = (currentGenreFilter === 'all') || cardGenres.includes(currentGenreFilter.toLowerCase());
+        const matchKw = !kw || cardTitle.includes(kw) || cardGenres.includes(kw);
+
+        if (matchTab && matchGenre && matchKw) {
+          card.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+      document.getElementById('emptyMovieNotice').classList.toggle('hidden', visibleCount > 0);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      render2DMap();
-      loadPovFromPython(activePovSeat);
-      requestAnimationFrame(drawAuditorium3D);
+      filterByTab('all');
     });
   </script>
 </body>
