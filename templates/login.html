@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BETA CINE+ | Đăng Nhập Hệ Thống</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    body { background-color: #070b14; color: #f8fafc; font-family: 'Be Vietnam Pro', sans-serif; }
+    .font-display { font-family: 'Orbitron', sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+  <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-12 bg-slate-900/95 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+
+    <!-- Cột trái: Giới thiệu & Tài khoản Demo nhanh -->
+    <div class="md:col-span-5 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 p-7 flex flex-col justify-between border-b md:border-b-0 md:border-r border-slate-800">
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-lg">
+            <i class="fa-solid fa-film text-white text-2xl"></i>
+          </div>
+          <div>
+            <h1 class="font-display font-black text-2xl tracking-wider text-white">BETA <span class="text-cyan-400">CINE+</span></h1>
+            <p class="text-[11px] text-slate-400">Hệ thống Đặt Vé 3D & Quản Trị CSDL</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed pt-2">
+          Hệ thống tự động nhận diện vai trò dựa trên tài khoản đăng nhập từ bảng <span class="text-cyan-300 font-bold">users</span> trong MySQL để điều hướng sang giao diện Khách hàng hoặc Quản trị viên.
+        </p>
+      </div>
+
+      <!-- Hộp chọn nhanh tài khoản Demo khi bảo vệ đồ án -->
+      <div class="space-y-2.5 pt-6">
+        <span class="text-[11px] font-extrabold text-amber-400 uppercase block">
+          <i class="fa-solid fa-bolt mr-1"></i>Điền nhanh tài khoản mẫu (Demo):
+        </span>
+        <button type="button" onclick="fillDemo('khachhang', '123456')"
+                class="w-full p-3 rounded-xl bg-slate-950/90 hover:bg-emerald-950/60 border border-slate-800 hover:border-emerald-500/50 text-left transition flex items-center justify-between group">
+          <div>
+            <div class="text-xs font-extrabold text-emerald-400">Tài khoản Khách Hàng</div>
+            <div class="text-[11px] text-slate-400">User: <b class="text-white">khachhang</b> • Pass: <b class="text-white">123456</b></div>
+          </div>
+          <i class="fa-solid fa-arrow-right text-xs text-slate-500 group-hover:text-emerald-400"></i>
+        </button>
+
+        <button type="button" onclick="fillDemo('admin', '123456')"
+                class="w-full p-3 rounded-xl bg-slate-950/90 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 text-left transition flex items-center justify-between group">
+          <div>
+            <div class="text-xs font-extrabold text-cyan-400">Tài khoản Quản Trị (Admin)</div>
+            <div class="text-[11px] text-slate-400">User: <b class="text-white">admin</b> • Pass: <b class="text-white">123456</b></div>
+          </div>
+          <i class="fa-solid fa-arrow-right text-xs text-slate-500 group-hover:text-cyan-400"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cột phải: Form Đăng nhập & Đăng ký -->
+    <div class="md:col-span-7 p-7 sm:p-9 flex flex-col justify-center space-y-5">
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="p-3.5 rounded-xl border text-xs font-semibold {{ 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200' if category == 'success' else 'bg-rose-950/80 border-rose-500/50 text-rose-200' }}">
+              <i class="fa-solid {{ 'fa-circle-check text-emerald-400' if category == 'success' else 'fa-triangle-exclamation text-rose-400' }} mr-1.5"></i>{{ msg }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Thanh chuyển đổi Đăng nhập / Đăng ký -->
+      <div class="flex border-b border-slate-800">
+        <button type="button" id="btnTabLogin" onclick="switchAuthTab('login')"
+                class="pb-3 px-4 text-sm font-black text-cyan-400 border-b-2 border-cyan-400 transition">
+          ĐĂNG NHẬP
+        </button>
+        <button type="button" id="btnTabRegister" onclick="switchAuthTab('register')"
+                class="pb-3 px-4 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition">
+          ĐĂNG KÝ KHÁCH HÀNG MỚI
+        </button>
+      </div>
+
+      <!-- FORM ĐĂNG NHẬP -->
+      <form id="formLogin" action="/login" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Tên đăng nhập</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+            <input type="text" name="username" id="loginUsername" required placeholder="Nhập username (VD: khachhang hoặc admin)..."
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-cyan-400" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Mật khẩu</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+            <input type="password" name="password" id="loginPassword" required placeholder="Nhập mật khẩu..."
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-white font-semibold focus:outline-none focus:border-cyan-400" />
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg transition">
+          <i class="fa-solid fa-right-to-bracket mr-1.5"></i>Đăng Nhập Vào Hệ Thống
+        </button>
+      </form>
+
+      <!-- FORM ĐĂNG KÝ TÀI KHOẢN KHÁCH HÀNG -->
+      <form id="formRegister" action="/register" method="POST" class="space-y-3.5 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Tên đăng nhập mới</label>
+            <input type="text" name="username" required placeholder="VD: hoangduong"
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-semibold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Mật khẩu</label>
+            <input type="password" name="password" required placeholder="Nhập mật khẩu..."
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-semibold" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Họ và tên</label>
+            <input type="text" name="full_name" required placeholder="VD: Dương Hoàng"
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-semibold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Số điện thoại nhận vé</label>
+            <input type="text" name="phone" required placeholder="VD: 0988123456"
+                   class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-amber-300 font-bold" />
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg transition">
+          <i class="fa-solid fa-user-plus mr-1.5"></i>Tạo Tài Khoản Khách Hàng
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    function switchAuthTab(tab) {
+      const isLogin = (tab === 'login');
+      document.getElementById('formLogin').classList.toggle('hidden', !isLogin);
+      document.getElementById('formRegister').classList.toggle('hidden', isLogin);
+      document.getElementById('btnTabLogin').className = isLogin
+        ? 'pb-3 px-4 text-sm font-black text-cyan-400 border-b-2 border-cyan-400 transition'
+        : 'pb-3 px-4 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition';
+      document.getElementById('btnTabRegister').className = !isLogin
+        ? 'pb-3 px-4 text-sm font-black text-emerald-400 border-b-2 border-emerald-400 transition'
+        : 'pb-3 px-4 text-sm font-bold text-slate-400 border-b-2 border-transparent hover:text-white transition';
+    }
+
+    function fillDemo(user, pass) {
+      switchAuthTab('login');
+      document.getElementById('loginUsername').value = user;
+      document.getElementById('loginPassword').value = pass;
+    }
+  </script>
+</body>
+</html>
