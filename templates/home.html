@@ -113,21 +113,22 @@
             Tất cả
           </button>
           {% for g in genres %}
-        <div class="mt-3.5 px-1 space-y-1">
-                <a href="/booking/{{ m.movie_id }}"
-                   class="block text-base font-extrabold text-[#1e5bb8] hover:underline truncate" title="{{ m.title }}">
-                  {{ m.title }}
-                </a>
-                <p class="text-xs text-slate-600 truncate">
-                  <span class="font-bold text-slate-800">Thể loại:</span> {{ m.genre }}
-                </p>
-                <p class="text-xs text-slate-600">
-                  <span class="font-bold text-slate-800">Thời lượng:</span> {{ m.duration }}
-                </p>
-              </div>
-            </div>
+            <button type="button" onclick="filterByGenre('{{ g.genre_name }}')" data-genre="{{ g.genre_name }}"
+                    class="genre-filter-btn px-3.5 py-1.5 rounded-full text-xs font-bold transition bg-white text-slate-700 border border-slate-300 hover:border-blue-500 hover:text-blue-600">
+              {{ g.genre_name }}
+            </button>
+          {% endfor %}
+        </div>
+        <div class="relative w-full sm:w-64">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+          <input type="text" id="movieKeywordInput" oninput="applyMovieFilters()" placeholder="Tìm tên phim, đạo diễn..."
+                 class="w-full bg-white border border-slate-300 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 font-semibold focus:outline-none focus:border-blue-600" />
+        </div>
+      </div>
 
- {% for m in movies %}
+      <!-- LƯỚI 4 CỘT POSTER PHIM -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 pt-1">
+        {% for m in movies %}
           <div class="movie-card flex flex-col justify-between rounded-2xl p-2.5 hover:bg-white hover:shadow-xl transition duration-200"
                data-tab="{{ m.status_tab }}"
                data-genres="{{ m.genre }}"
@@ -175,6 +176,8 @@
                 <span>MUA VÉ</span>
               </a>
             </div>
+
+          </div>
         {% endfor %}
       </div>
 
